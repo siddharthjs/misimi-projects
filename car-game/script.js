@@ -7,11 +7,8 @@ let buildingHeight = 600;
 let buildingSpeed = 1; // Decreased the speed
 let lastBuildingY = 0;
 
-let buildingSpacing = 200;
+let buildingSpacing = 150;
 let buildingChance = 0.7;
-
-let obstacleFrequency = 180;  // Number of frames between each obstacle
-let framesSinceLastObstacle = 0;  // Number of frames since the last obstacle was created
 
 
 function setup() {
@@ -108,24 +105,6 @@ function draw() {
         textSize(24);
         text("Game Over", width / 2 - 50, height / 2);
     }
-
-    // Increment framesSinceLastObstacle
-    framesSinceLastObstacle++;
-
-    // Create a new obstacle when enough frames have passed
-    if (framesSinceLastObstacle >= obstacleFrequency) {
-        let obstacle = new Obstacle();
-        // Make sure new obstacle doesn't intersect with existing ones
-        for (let i = 0; i < obstacles.length; i++) {
-            if (!obstacle.intersects(obstacles[i])) {
-                obstacles.push(obstacle);
-                framesSinceLastObstacle = 0;
-                break;
-            }
-        }
-    }
-
-    
 }
 
 function drawRoad() {
