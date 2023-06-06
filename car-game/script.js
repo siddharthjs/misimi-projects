@@ -8,7 +8,11 @@ let buildingSpeed = 1; // Decreased the speed
 let lastBuildingY = 0;
 
 let buildingSpacing = 200;
-let buildingChance = 0.5;
+let buildingChance = 0.7;
+
+let obstacleFrequency = 180;  // Number of frames between each obstacle
+let framesSinceLastObstacle = 0;  // Number of frames since the last obstacle was created
+
 
 function setup() {
     let canvas = createCanvas(400, 600);
@@ -33,8 +37,6 @@ function setup() {
     }
 }
 
-
-
 function draw() {
     background(50);
 
@@ -42,14 +44,10 @@ function draw() {
         buildings[i].y += buildingSpeed;
         buildings[i].show();
     }
-
-
-
-
     
 
     // Create new buildings at the top
-    if (buildings[0].y >= 0) {
+    if (lastBuildingY + buildingSpacing <= height) {
         let y = lastBuildingY - buildingSpacing;
 
         // Randomly decide whether to create a building on the left
@@ -64,13 +62,13 @@ function draw() {
             buildings.unshift(new Building(width - 50, y, 50, rightBuildingHeight));  // right side
         }
 
-        lastBuildingY -= buildingSpacing;
+        lastBuildingY = y;
     }
 
     // Remove buildings that have moved off the bottom
-if (buildings[buildings.length - 1].y - buildings[buildings.length - 1].h > height) {
-    buildings.pop();
-}
+    while (buildings.length > 0 && buildings[buildings.length - 1].y - buildings[buildings.length - 1].h > height) {
+        buildings.pop();
+    }
 
 
     drawRoad();
@@ -110,6 +108,24 @@ if (buildings[buildings.length - 1].y - buildings[buildings.length - 1].h > heig
         textSize(24);
         text("Game Over", width / 2 - 50, height / 2);
     }
+
+    // Increment framesSinceLastObstacle
+    framesSinceLastObstacle++;
+
+    // Create a new obstacle when enough frames have passed
+    if (framesSinceLastObstacle >= obstacleFrequency) {
+        let obstacle = new Obstacle();
+        // Make sure new obstacle doesn't intersect with existing ones
+        for (let i = 0; i < obstacles.length; i++) {
+            if (!obstacle.intersects(obstacles[i])) {
+                obstacles.push(obstacle);
+                framesSinceLastObstacle = 0;
+                break;
+            }
+        }
+    }
+
+    
 }
 
 function drawRoad() {
@@ -157,7 +173,7 @@ class Car {
 
 class Obstacle {
     constructor() {
-        this.x = random(width);
+        this.x = random(width / 2 - 100, width / 2 + 100);  // Limits the obstacle to fall within the road
         this.y = 0;
         this.speed = 2;
         this.w = random(20, 100);
@@ -173,15 +189,15 @@ class Obstacle {
     }
 
     hits(car) {
-        let left = this.x - this.w/2;
-        let right = this.x + this.w/2;
-        let top = this.y - this.h/2;
-        let bottom = this.y + this.h/2;
+        let left = this.x - this.w / 2;
+        let right = this.x + this.w / 2;
+        let top = this.y - this.h / 2;
+        let bottom = this.y + this.h / 2;
 
-        let carLeft = car.x - car.w/2;
-        let carRight = car.x + car.w/2;
-        let carTop = car.y - car.h/2;
-        let carBottom = car.y + car.h/2;
+        let carLeft = car.x - car.w / 2;
+        let carRight = car.x + car.w / 2;
+        let carTop = car.y - car.h / 2;
+        let carBottom = car.y + car.h / 2;
 
         return !(carBottom < top || carTop > bottom || carRight < left || carLeft > right);
     }
@@ -191,19 +207,20 @@ class Obstacle {
     }
 
     intersects(other) {
-        let left = this.x - this.w/2;
-        let right = this.x + this.w/2;
-        let top = this.y - this.h/2;
-        let bottom = this.y + this.h/2;
+        let left = this.x - this.w / 2;
+        let right = this.x + this.w / 2;
+        let top = this.y - this.h / 2;
+        let bottom = this.y + this.h / 2;
 
-        let otherLeft = other.x - other.w/2;
-        let otherRight = other.x + other.w/2;
-        let otherTop = other.y - other.h/2;
-        let otherBottom = other.y + other.h/2;
+        let otherLeft = other.x - other.w / 2;
+        let otherRight = other.x + other.w / 2;
+        let otherTop = other.y - other.h / 2;
+        let otherBottom = other.y + other.h / 2;
 
         return !(otherBottom < top || otherTop > bottom || otherRight < left || otherLeft > right);
     }
 }
+
 
 class Building {
     constructor(x, y, w, h) {
