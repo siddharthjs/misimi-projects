@@ -10,6 +10,9 @@ let lastBuildingY = 0;
 let buildingSpacing = 150;
 let buildingChance = 0.7;
 
+let deliveryColors = [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0]];
+let currentColorIndex = 0;
+
 
 function setup() {
     let canvas = createCanvas(400, 600);
@@ -32,6 +35,10 @@ function setup() {
             buildings.push(new Building(width - 50, y, 50, rightBuildingHeight));  // right side
         }
     }
+
+    // Display initial delivery target
+    fill(deliveryColors[currentColorIndex]);
+    rect(width / 2 - 50, 0, 100, 30);
 }
 
 function draw() {
@@ -105,6 +112,16 @@ function draw() {
         textSize(24);
         text("Game Over", width / 2 - 50, height / 2);
     }
+
+    // Update package delivery
+    if (car.deliverPackage()) {
+        // If package was successfully delivered, change the target color
+        currentColorIndex = (currentColorIndex + 1) % deliveryColors.length;
+    }
+
+    // Display current delivery target
+    fill(deliveryColors[currentColorIndex]);
+    rect(width / 2 - 50, 0, 100, 30);
 }
 
 function drawRoad() {
@@ -121,6 +138,32 @@ class Car {
         this.speed = 2;
         this.w = 20;
         this.h = 40;
+        this.package = null;
+    }
+
+    deliverPackage() {
+        if (this.package) {
+            this.package.move();
+            this.package.show();
+
+            // Check if package has hit a building
+            for (let i = 0; i < buildings.length; i++) {
+                if (buildings[i].color === this.package.color && 
+                    this.package.x < buildings[i].x + buildings[i].w &&
+                    this.package.x + this.package.w > buildings[i].x &&
+                    this.package.y < buildings[i].y + buildings[i].h &&
+                    this.package.y + this.package.h > buildings[i].y) {
+                    // Package successfully delivered
+                    this.package = null;
+                    return true;
+                }
+            }
+            // Check if package has moved off screen
+            if (this.package.y > height) {
+                this.package = null;
+            }
+        }
+        return false;
     }
 
     show() {
@@ -209,6 +252,7 @@ class Building {
         this.h = h;
         this.colors = [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0]]; // RGB values for red, green, blue, yellow
         this.color = random(this.colors);  // Select a random color from the colors array
+        
     }
 
     show() {
@@ -218,4 +262,31 @@ class Building {
     }
 }
 
+class Package {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.w = 20;
+        this.h = 20;
+        this.speed = 2;
+        this.color = color;
+    }
 
+    show() {
+        fill(this.color);
+        rect(this.x, this.y, this.w, this.h);
+    }
+
+    move() {
+        this.y += this.speed;
+    }
+}
+
+function keyPressed() {
+    // Other keys...
+
+    if (keyCode === 32 && !car.package) {  // Space bar
+        // Create a new package of the current target color
+        car.package = new Package(car.x, car.y, deliveryColors[currentColorIndex]);
+    }
+}
