@@ -68,10 +68,10 @@ function draw() {
     }
 
     // Remove buildings that have moved off the bottom
-    if (buildings[buildings.length - 1].y > height) {
-        buildings.pop();
-        buildings.pop();
-    }
+if (buildings[buildings.length - 1].y - buildings[buildings.length - 1].h > height) {
+    buildings.pop();
+}
+
 
     drawRoad();
 
