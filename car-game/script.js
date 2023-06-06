@@ -207,10 +207,15 @@ class Building {
         this.y = y;
         this.w = w;
         this.h = h;
+        this.colors = [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0]]; // RGB values for red, green, blue, yellow
+        this.color = random(this.colors);  // Select a random color from the colors array
     }
 
     show() {
+        fill(this.color);
         rectMode(CORNER);
         rect(this.x, this.y, this.w, this.h);
     }
 }
+
+
