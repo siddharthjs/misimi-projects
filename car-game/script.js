@@ -3,46 +3,74 @@ let obstacles = [];
 let buildings = [];
 let gameIsOver = false;
 
-let roadWidth = 100; // Set road width according to your needs
+let buildingHeight = 600;
+let buildingSpeed = 1; // Decreased the speed
+let lastBuildingY = 0;
+
+let buildingSpacing = 200;
+let buildingChance = 0.5;
 
 function setup() {
     let canvas = createCanvas(400, 600);
-    canvas.parent('sketch-holder');  // you need to add 'sketch-holder' div in your HTML
+    canvas.parent('sketch-holder');  
 
     car = new Car();
 
-    // Generate buildings
-    let buildingWidth = 50;
-    let lastHeightLeft = 0;
-    let lastHeightRight = 0;
-    let buildingAreaWidth = (width - roadWidth) / 2; // width available for buildings
+    for (let i = 0; i < buildingHeight / buildingSpacing; i++) {
+        let y = i * buildingSpacing;
 
-    for (let i = 0; i < buildingAreaWidth / buildingWidth; i++) {
-        let height1 = random(50, 150);
-        while (abs(height1 - lastHeightLeft) < 40) {
-            height1 = random(50, 150);  // Ensure no two buildings are at the same level
+        // Randomly decide whether to create a building on the left
+        if (random() < buildingChance) {
+            let leftBuildingHeight = random(50, 150);
+            buildings.push(new Building(0, y, 50, leftBuildingHeight));  // left side
         }
-        lastHeightLeft = height1;
 
-        let height2 = random(50, 150);
-        while (abs(height2 - lastHeightRight) < 40) {
-            height2 = random(50, 150);  // Ensure no two buildings are at the same level
+        // Randomly decide whether to create a building on the right
+        if (random() < buildingChance) {
+            let rightBuildingHeight = random(50, 150);
+            buildings.push(new Building(width - 50, y, 50, rightBuildingHeight));  // right side
         }
-        lastHeightRight = height2;
-
-        // Adjusted x-coordinates to put buildings at the edge of the road
-        buildings.push(new Building(i * buildingWidth, height - height1, buildingWidth, height1));  // left side
-        buildings.push(new Building(width - (i + 1) * buildingWidth, height - height2, buildingWidth, height2));  // right side
     }
 }
+
 
 
 function draw() {
     background(50);
 
-    // Show buildings
     for (let i = 0; i < buildings.length; i++) {
+        buildings[i].y += buildingSpeed;
         buildings[i].show();
+    }
+
+
+
+
+    
+
+    // Create new buildings at the top
+    if (buildings[0].y >= 0) {
+        let y = lastBuildingY - buildingSpacing;
+
+        // Randomly decide whether to create a building on the left
+        if (random() < buildingChance) {
+            let leftBuildingHeight = random(50, 150);
+            buildings.unshift(new Building(0, y, 50, leftBuildingHeight));  // left side
+        }
+
+        // Randomly decide whether to create a building on the right
+        if (random() < buildingChance) {
+            let rightBuildingHeight = random(50, 150);
+            buildings.unshift(new Building(width - 50, y, 50, rightBuildingHeight));  // right side
+        }
+
+        lastBuildingY -= buildingSpacing;
+    }
+
+    // Remove buildings that have moved off the bottom
+    if (buildings[buildings.length - 1].y > height) {
+        buildings.pop();
+        buildings.pop();
     }
 
     drawRoad();
@@ -186,6 +214,7 @@ class Building {
     }
 
     show() {
+        rectMode(CORNER);
         rect(this.x, this.y, this.w, this.h);
     }
 }
