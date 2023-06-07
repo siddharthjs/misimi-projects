@@ -145,26 +145,30 @@ class Car {
         if (this.package) {
             this.package.move();
             this.package.show();
-
+    
             // Check if package has hit a building
             for (let i = 0; i < buildings.length; i++) {
-                if (buildings[i].color === this.package.color && 
+                if (colorsEqual(buildings[i].color, this.package.color) && 
                     this.package.x < buildings[i].x + buildings[i].w &&
                     this.package.x + this.package.w > buildings[i].x &&
                     this.package.y < buildings[i].y + buildings[i].h &&
                     this.package.y + this.package.h > buildings[i].y) {
                     // Package successfully delivered
-                    this.package = null;
+                    this.package.speed = 0;
+                    this.package.building = buildings[i];
+                    this.package.y = buildings[i].y - this.package.h;
+                    this.package = null; // Detach the package from the car
                     return true;
                 }
             }
             // Check if package has moved off screen
-            if (this.package.y > height) {
+            if (this.package && this.package.y > height) {
                 this.package = null;
             }
         }
         return false;
     }
+    
 
     show() {
         rectMode(CENTER);
@@ -270,6 +274,7 @@ class Package {
         this.h = 20;
         this.speed = 2;
         this.color = color;
+        this.building = null;
     }
 
     show() {
@@ -278,7 +283,13 @@ class Package {
     }
 
     move() {
-        this.y += this.speed;
+        if (this.building) {
+            // If the package is attached to a building, move with the building
+            this.y = this.building.y - this.building.h;
+        } else {
+            // If the package is not attached to a building, fall down
+            this.y += this.speed;
+        }
     }
 }
 
@@ -289,4 +300,8 @@ function keyPressed() {
         // Create a new package of the current target color
         car.package = new Package(car.x, car.y, deliveryColors[currentColorIndex]);
     }
+}
+
+function colorsEqual(a, b) {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 }
