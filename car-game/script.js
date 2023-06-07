@@ -13,10 +13,25 @@ let buildingChance = 0.7;
 let deliveryColors = [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0]];
 let currentColorIndex = 0;
 
+let timer;
+let score;
+let startTime;
+
+
+
 
 function setup() {
     let canvas = createCanvas(400, 600);
     canvas.parent('sketch-holder');  
+
+     // Set timer to 3 minutes (180 seconds)
+    timer = 180;
+
+    // Initialize score
+    score = 0;
+    
+    // Record start time
+    startTime = millis();
 
     car = new Car();
 
@@ -48,6 +63,23 @@ function draw() {
         buildings[i].y += buildingSpeed;
         buildings[i].show();
     }
+
+    // Update timer
+  let elapsedSeconds = Math.floor((millis() - startTime) / 1000);
+  timer = max(0, 180 - elapsedSeconds);
+  
+  // Check if time is up
+  if (timer <= 0) {
+    console.log('Game over!');
+    noLoop();
+  }
+  
+  // Display timer and score
+  fill(255);
+  textSize(24);
+  textAlign(LEFT, TOP);
+  text('Timer: ' + timer, 10, 10);
+  text('Score: ' + score, 10, 40);
     
 
     // Create new buildings at the top
@@ -153,15 +185,16 @@ class Car {
                     this.package.x + this.package.w > buildings[i].x &&
                     this.package.y < buildings[i].y + buildings[i].h &&
                     this.package.y + this.package.h > buildings[i].y) {
-                    // Package successfully delivered
-                    this.package.speed = 0;
-                    this.package.building = buildings[i];
-                    this.package.y = buildings[i].y - this.package.h;
-                    console.log('Package attached!');  // Print message to console
-                    this.package = null; // Detach the package from the car
-                    return true;
+                  // Package successfully delivered
+                  this.package.speed = 0;
+                  this.package.building = buildings[i];
+                  this.package.y = buildings[i].y - this.package.h;
+                  this.package = null; // Detach the package from the car
+                  score++; // Increase score
+                  console.log('Package attached!');  // Print message to console
+                  return true;
                 }
-            }
+              }
             // Check if package has moved off screen
             if (this.package && this.package.y > height) {
                 this.package = null;
@@ -276,6 +309,7 @@ class Package {
         this.speed = 2;
         this.color = color;
         this.building = null;
+        this.speed = buildingSpeed; // Set package speed to match building speed
     }
 
     show() {
