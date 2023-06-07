@@ -145,7 +145,7 @@ class Car {
         if (this.package) {
             this.package.move();
             this.package.show();
-    
+
             // Check if package has hit a building
             for (let i = 0; i < buildings.length; i++) {
                 if (colorsEqual(buildings[i].color, this.package.color) && 
@@ -157,6 +157,7 @@ class Car {
                     this.package.speed = 0;
                     this.package.building = buildings[i];
                     this.package.y = buildings[i].y - this.package.h;
+                    console.log('Package attached!');  // Print message to console
                     this.package = null; // Detach the package from the car
                     return true;
                 }
@@ -279,6 +280,12 @@ class Package {
 
     show() {
         fill(this.color);
+        if (this.building) {
+            // If the package is attached to a building, outline it in black
+            stroke(0);  // Set stroke color to black
+        } else {
+            noStroke();  // No outline when not attached to a building
+        }
         rect(this.x, this.y, this.w, this.h);
     }
 
